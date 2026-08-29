@@ -1,9 +1,13 @@
+# app data (ciudades guardadas)
+data.json
+
 # dependencies (bun install)
 node_modules
 
 # output
 out
 dist
+weather
 *.tgz
 
 # code coverage

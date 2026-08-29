@@ -19,8 +19,8 @@ El objetivo de esta aplicación es que creemos una aplicación de consola que pi
 2. Paso 2: OpenMeteo API.
 
 ```
-https://geocoding-api.open-meteo.com/v1/search?name=Ottawa&count=1&language=es&format=json
-https://api.open-meteo.com/v1/forecast?latitude=45.41117&longitude=-75.69812&current=temperature_2m
+https://geocoding-api.open-meteo.com/v1/search?name=Bogota&count=1&language=es&format=json
+https://api.open-meteo.com/v1/forecast?latitude=4.60971&longitude=-74.08175&current=temperature_2m
 ```
 
 ## Inicializar proyecto
