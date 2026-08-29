@@ -4,6 +4,9 @@ data.json
 # dependencies (bun install)
 node_modules
 
+# Build
+weather
+
 # output
 out
 dist
