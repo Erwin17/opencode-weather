@@ -4,7 +4,13 @@
 
 Spanish-language weather CLI app (`README.md` has the spec and menu mockup): menu-driven console app using OpenMeteo — two-step API flow: geocoding first (`geocoding-api.open-meteo.com/v1/search?name=<city>`), then forecast with returned lat/lon (`api.open-meteo.com/v1/forecast`). Eventually compiled to an executable binary (`bun build --compile`).
 
-Currently a fresh `bun init` scaffold: `index.ts` is still the hello-world stub.
+### Architecture
+
+- `index.ts` — entry point, main loop and user interaction
+- `src/api.ts` — OpenMeteo API calls (geocoding + forecast)
+- `src/ui.ts` — menu rendering, formatting, output helpers
+- `src/store.ts` — JSON file persistence (`~/.config/weather/`)
+- `src/colors.ts` — ANSI color helpers with TTY detection
 
 ## Runtime: Bun, not Node
 

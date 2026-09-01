@@ -1,5 +1,6 @@
 import type { Ciudad, Clima, UnidadTemperatura } from "./api.ts";
 import { describirClima } from "./api.ts";
+import { amarillo, cyan, rojo, verde } from "./colors.ts";
 
 const LINEA = "═".repeat(40);
 
@@ -14,9 +15,9 @@ export function renderizarMenu(
   unidad: UnidadTemperatura,
 ): string {
   return [
-    LINEA,
-    "         WEATHER CLI",
-    LINEA,
+    cyan(LINEA),
+    cyan("         WEATHER CLI"),
+    cyan(LINEA),
     "  1. Clima de ciudad default",
     `  2. Clima de todas las ciudades (${totalCiudades})`,
     "  3. Buscar y agregar ciudad",
@@ -24,7 +25,7 @@ export function renderizarMenu(
     "  5. Establecer ciudad default",
     `  8. Ajustes (${simboloUnidad(unidad)})`,
     "  9. Salir",
-    LINEA,
+    cyan(LINEA),
   ].join("\n");
 }
 
@@ -45,7 +46,8 @@ export function formatearClima(
   unidad: UnidadTemperatura,
 ): string {
   const descripcion = describirClima(clima.codigo);
-  return `${iconoClima(clima.codigo)} ${ciudad.name}: ${descripcion}, ${clima.temperatura.toFixed(1)}${simboloUnidad(unidad)}`;
+  const temp = amarillo(`${clima.temperatura.toFixed(1)}${simboloUnidad(unidad)}`);
+  return `${iconoClima(clima.codigo)} ${ciudad.name}: ${descripcion}, ${temp}`;
 }
 
 export function listarCiudades(ciudades: Ciudad[], defaultId: number | null): void {
@@ -57,9 +59,9 @@ export function listarCiudades(ciudades: Ciudad[], defaultId: number | null): vo
 }
 
 export function mostrarInfo(mensaje: string): void {
-  console.log(`  ${mensaje}`);
+  console.log(`  ${verde(mensaje)}`);
 }
 
 export function mostrarError(mensaje: string): void {
-  console.log(`  ✗ ${mensaje}`);
+  console.log(`  ${rojo(`✗ ${mensaje}`)}`);
 }
