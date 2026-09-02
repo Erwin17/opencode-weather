@@ -1,4 +1,4 @@
-import { buscarCiudad, obtenerClima } from "./src/api.ts";
+import { buscarCiudad, obtenerClima, obtenerPronostico } from "./src/api.ts";
 import type { Ciudad } from "./src/api.ts";
 import {
   agregarCiudad,
@@ -12,6 +12,7 @@ import {
 import {
   PROMPT,
   formatearClima,
+  formatearPronostico,
   listarCiudades,
   mostrarError,
   mostrarInfo,
@@ -64,6 +65,20 @@ async function climaDefault(): Promise<void> {
     return mostrarInfo("No hay ciudad default. Agrega una (opción 3) y establécela (opción 5).");
   }
   await imprimirClima(ciudad);
+}
+
+async function pronosticoDefault(): Promise<void> {
+  const estado = obtenerEstado();
+  const ciudad = estado.ciudades.find((c) => c.id === estado.defaultId);
+  if (!ciudad) {
+    return mostrarInfo("No hay ciudad default. Agrega una (opción 3) y establécela (opción 5).");
+  }
+  try {
+    const dias = await obtenerPronostico(ciudad, estado.unidad);
+    console.log(formatearPronostico(ciudad, dias, estado.unidad));
+  } catch {
+    mostrarError(`No se pudo obtener el pronóstico de ${ciudad.name}.`);
+  }
 }
 
 async function climaDeTodas(): Promise<void> {
@@ -159,6 +174,9 @@ async function main(): Promise<void> {
           break;
         case "5":
           await establecerDefaultUI();
+          break;
+        case "6":
+          await pronosticoDefault();
           break;
         case "8":
           await ajustesUI();

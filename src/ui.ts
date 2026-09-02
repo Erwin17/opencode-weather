@@ -1,4 +1,4 @@
-import type { Ciudad, Clima, UnidadTemperatura } from "./api.ts";
+import type { Ciudad, Clima, PronosticoDiario, UnidadTemperatura } from "./api.ts";
 import { describirClima } from "./api.ts";
 import { amarillo, cyan, rojo, verde } from "./colors.ts";
 
@@ -23,6 +23,7 @@ export function renderizarMenu(
     "  3. Buscar y agregar ciudad",
     "  4. Eliminar ciudad",
     "  5. Establecer ciudad default",
+    "  6. Pronóstico 7 días (default)",
     `  8. Ajustes (${simboloUnidad(unidad)})`,
     "  9. Salir",
     cyan(LINEA),
@@ -48,6 +49,31 @@ export function formatearClima(
   const descripcion = describirClima(clima.codigo);
   const temp = amarillo(`${clima.temperatura.toFixed(1)}${simboloUnidad(unidad)}`);
   return `${iconoClima(clima.codigo)} ${ciudad.name}: ${descripcion}, ${temp}`;
+}
+
+function formatearFecha(fecha: string): string {
+  const dia = new Date(`${fecha}T00:00:00`);
+  if (Number.isNaN(dia.getTime())) return fecha;
+  const formato = new Intl.DateTimeFormat("es", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+  });
+  return formato.format(dia);
+}
+
+export function formatearPronostico(
+  ciudad: Ciudad,
+  dias: PronosticoDiario[],
+  unidad: UnidadTemperatura,
+): string {
+  const unidadStr = simboloUnidad(unidad);
+  const lineas = dias.map((d) => {
+    const descripcion = describirClima(d.codigo);
+    const rango = amarillo(`${d.minTemperatura.toFixed(0)}${unidadStr} / ${d.maxTemperatura.toFixed(0)}${unidadStr}`);
+    return `  ${iconoClima(d.codigo)} ${formatearFecha(d.fecha)}: ${descripcion} — mín ${rango}`;
+  });
+  return [cyan(LINEA), cyan(`   PRONÓSTICO 7 DÍAS — ${ciudad.name}`), cyan(LINEA), ...lineas, cyan(LINEA)].join("\n");
 }
 
 export function listarCiudades(ciudades: Ciudad[], defaultId: number | null): void {
