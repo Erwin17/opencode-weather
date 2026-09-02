@@ -22,20 +22,26 @@ Spanish-language weather CLI app (`README.md` has the spec and menu mockup): men
 
 ## Commands
 
-No scripts defined in package.json. Verify with:
+Scripts in package.json:
 
 ```sh
-bun run index.ts        # run the app
-bunx tsc --noEmit       # typecheck (typescript installed locally)
+bun run start         # run the app (src/index.ts)
+bun run dev           # run with --watch
+bun run test          # run all tests in test/ (bun test --isolate)
+bun run build         # gate: run tests, only compile binary if all pass
+bunx tsc --noEmit     # typecheck (typescript installed locally)
 ```
 
-Tests go in `*.test.ts` using `bun:test` (none exist yet).
+`build` runs `bun test --isolate test/` first and only compiles `weather` if every test passes (the "don't build if tests fail" rule).
+
+Tests go in `*.test.ts` under `test/` using `bun:test`. Run with `--isolate` so `mock.module` and `globalThis.fetch` mocks don't leak across test files.
 
 ## tsconfig strictness gotchas
 
 - `verbatimModuleSyntax`: type-only imports must be `import type { X }`.
 - `noUncheckedIndexedAccess`: `arr[i]` / `obj[key]` returns `T | undefined` — guard before use.
 - `.ts` extensions allowed in imports (`allowImportingTsExtensions`).
+- Test helper types: to type a lazily-imported action use `type Fn = typeof import("../../src/actions/x.ts").fn`, not `import type { fn }` (that fails with `verbatimModuleSyntax` since it's a value).
 
 ## Conventions
 
