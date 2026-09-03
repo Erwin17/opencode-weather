@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+    paths: ['package.json']
     tags:
       - "v*"
 
@@ -11,7 +12,7 @@ permissions:
   contents: write
 
 env:
-  BUN_VERSION: "1.2"
+  BUN_VERSION: "1.4.0"
 
 jobs:
   build:
