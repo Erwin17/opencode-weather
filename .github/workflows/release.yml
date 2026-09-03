@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  BUN_VERSION: "1.2"
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: darwin-arm64, bun_target: bun-darwin-arm64, runner: macos-latest, ext: "" }
+          - { target: darwin-x64, bun_target: bun-darwin-x64, runner: macos-latest, ext: "" }
+          - { target: linux-x64, bun_target: bun-linux-x64, runner: ubuntu-latest, ext: "" }
+          - { target: linux-arm64, bun_target: bun-linux-arm64, runner: ubuntu-latest, ext: "" }
+          - { target: windows-x64, bun_target: bun-windows-x64, runner: windows-latest, ext: ".exe" }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag $TAG_VERSION does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Compile binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          bun build --compile \
+            --target=${{ matrix.bun_target }} \
+            src/index.ts \
+            --outfile dist/weather-${{ matrix.target }}${{ matrix.ext }}
+
+      - name: Smoke test (native only)
+        if: matrix.target == 'darwin-arm64' || matrix.target == 'linux-x64'
+        run: |
+          ./dist/weather-${{ matrix.target }} --help || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: weather-${{ matrix.target }}
+          path: dist/weather-${{ matrix.target }}${{ matrix.ext }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Stage binaries
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
+          cd release && sha256sum weather-* > SHA256SUMS
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION=$(node -p "require('./package.json').version")
+          
+          gh release create "$TAG" \
+            --title "Weather CLI v${VERSION}" \
+            --generate-notes \
+            release/weather-* \
+            release/SHA256SUMS
